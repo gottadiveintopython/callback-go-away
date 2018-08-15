@@ -17,6 +17,9 @@ class Increament(EventBase):
         resume_gen()
 
 
+Inc = Increament
+
+
 class CoreTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -26,14 +29,16 @@ class CoreTestCase(unittest.TestCase):
         self.counter += 1
         resume_gen()
 
+    inc = increament
+
     def test_callbackgoaway(self):
 
         @callbackgoaway
         def func():
             self.assertEqual(self.counter, 0)
-            yield self.increament
+            yield self.inc
             self.assertEqual(self.counter, 1)
-            yield Increament(self)
+            yield Inc(self)
             self.assertEqual(self.counter, 2)
 
         func()
@@ -44,13 +49,13 @@ class CoreTestCase(unittest.TestCase):
         @callbackgoaway
         def func():
             self.assertEqual(self.counter, 0)
-            yield Increament(self) & Increament(self)
+            yield Inc(self) & Inc(self)
             self.assertEqual(self.counter, 2)
-            yield Increament(self) & Increament(self) & Increament(self)
+            yield Inc(self) & Inc(self) & Inc(self)
             self.assertEqual(self.counter, 5)
-            yield And(Increament(self), Increament(self), Increament(self))
+            yield And(Inc(self), Inc(self), Inc(self))
             self.assertEqual(self.counter, 8)
-            yield And(self.increament, self.increament, self.increament)
+            yield And(self.inc, self.inc, self.inc)
             self.assertEqual(self.counter, 11)
 
         func()
@@ -64,19 +69,19 @@ class CoreTestCase(unittest.TestCase):
 
             # orなので片方のincreamentの処理が終わった時点でgeneratorが再開する。
             # よって 1 しか増加しない。
-            yield Increament(self) | Increament(self)
+            yield Inc(self) | Inc(self)
             self.assertEqual(self.counter, 1)
 
             # 同上
-            yield Increament(self) | Increament(self) | Increament(self)
+            yield Inc(self) | Inc(self) | Inc(self)
             self.assertEqual(self.counter, 2)
 
             # 同上
-            yield Or(Increament(self), Increament(self), Increament(self))
+            yield Or(Inc(self), Inc(self), Inc(self))
             self.assertEqual(self.counter, 3)
 
             # 同上
-            yield Or(self.increament, self.increament, self.increament)
+            yield Or(self.inc, self.inc, self.inc)
             self.assertEqual(self.counter, 4)
 
         func()
@@ -91,11 +96,11 @@ class CoreTestCase(unittest.TestCase):
             self.assertEqual(self.counter, 0)
 
             # 一番左のincreamentが処理された時点でgeneratorが再開するので +1
-            yield Increament(self) | Increament(self) & Increament(self)
+            yield Inc(self) | Inc(self) & Inc(self)
             self.assertEqual(self.counter, 1)
 
             # 右以外のincreamentが処理された時点でgeneratorが再開するので +2
-            yield Increament(self) & Increament(self) | Increament(self)
+            yield Inc(self) & Inc(self) | Inc(self)
             self.assertEqual(self.counter, 3)
 
         func()
