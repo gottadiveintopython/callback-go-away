@@ -1,8 +1,9 @@
 # Callback Go Away: Reducing annoying callback functions
 
-Ugly code like this:
+このmoduleはKivyにおいて起こりうる、callback関数による醜いcodeを減らす為に作りました。例えば以下のようなLabelのtextを切り替えていくアニメーションのcodeは
 
 ```python
+# Before
 from kivy.clock import Clock
 
 def animate(label):
@@ -24,9 +25,10 @@ def animate(label):
     s(phase1, .5)
 ```
 
-will become like this:
+以下の様に書き換えられます。
 
 ```python
+# After
 from callbackgoaway import callbackgoaway
 from callbackgoaway.kivy import Sleep as S
 
@@ -41,86 +43,136 @@ def animate(label):
     label.text = 'Kivy?'
 ```
 
-and ugly code like this:
+この例のような **特にUserの操作に反応するわけではなく、ただひたすら逐一処理を行いたい時** 、言い換えるなら **CUIアプリのような書き方をしたい時** にこのmoduleは真価を発揮します。(Userの操作に関してもですがCUIアプリのように特定の時点でのみ入力を受け付けたいなら
+このmoduleは使えます)。
+
+## このmoduleはいづれ要らなくなる?
+
+moduleの詳しい説明の前に先に言っておきたいのが、Kivyがasyncioに対応した時(例えば[これ](https://github.com/kivy/kivy/pull/5241)が採用された時)にはこのmoduleなど使わずとも同じ事ができるようになるかもしれない事です。漠然とした予想なので絶対にとは言えないですが、対応した時には例えば以下のような書き方が可能になるはずです。
 
 ```python
-from kivy.animation import Animation as A
+# Future? Probabely like this
+from asyncio import sleep
 
-def animate(image, image2):
-
-    def on_complete(a, widget):
-        a = A(width=300)
-        a.bind(on_complete=on_complete2)
-        a.start(image2)
-
-    def on_complete2(a, widget):
-        print('Done!')
-
-    a = A(width=800)
-    a.bind(on_complete=on_complete)
-    a.start(image)
+async def animate(label):
+    label.text = 'Do'
+    await sleep(.5)
+    label.text = 'You'
+    await sleep(.6)
+    label.text = 'Like'
+    await sleep(.7)
+    label.text = 'Kivy?'
 ```
 
-will become like this:
+なのでこのmoduleはあくまでそれまでの代替策として考えてもらえたらと思います。
 
-```python
-from kivy.animation import Animation as A
-from callbackgoaway import callbackgoaway
-from callbackgoaway.kivy import Event as E
+## Eventの待機
 
-@callbackgoaway
-def animate(image, image2):
-    a = A(width=800)
-    a.start(image1)
-    yield E(a, 'on_complete')
-    a = A(width=300)
-    a.start(image2)
-    yield E(a, 'on_complete')
-    print('Done!')
-```
-
-Of course, you can use `Event` on any kind of `EventDispatcher`
+それでは詳しい機能の説明に入りたいと思います。上の例ではSleepによる時間待機しかしてませんが、Eventの待機もできます。Eventというのは勿論`EventDispatcher`のEventの事です。kivyにおいては多くの物(`App`,`Widget`,`Sound`,`Animation`)が`EventDispatcher`の派生Classである為、それらを利用したcodeが容易に書けます。
 
 ```python
 from kivy.core.audio import SoundLoader
 from kivy.factory import Factory
+from kivy.animtion import Animation
 
 from callbackgoaway import callbackgoaway
 from callbackgoaway.kivy import Event as E
 
-sound = SoundLoader(...)
-button = Factory.Button(...)
 
 @callbackgoaway
 def func():
+    sound = SoundLoader(...)
+    button = Factory.Button(...)
+    anim = Animation(...)
+
+    # wait until the sound stops
+    # 音が鳴り止むまで待機
     sound.play()
-    yield E(sound, 'on_stop')  # wait until the sound stops
-    yield E(button, 'on_press')  # wait until the button is pressed
-    yield E(button, 'text')  # wait until the text of the button is changed
+    yield E(sound, 'on_stop')  # A
+
+    # wait until the button is pressed
+    # buttonが押されるまで待機
+    yield E(button, 'on_press')  # B
+
+    # wait until the text property of the button is changed
+    # buttonのtextプロパティが変化するまで待機
+    yield E(button, 'text')
+
+    # wait for the completion of the animation
+    # animationが完了するまで待機
+    anim.start(button)
+    yield E(anim, 'on_complete')
 ```
 
-## or-operator and and-operator
+## or演算子とand演算子
+
+or演算子とand演算子を使うこともできます。
 
 ```python
+from kivy.core.audio import SoundLoader
+from kivy.factory import Factory
+from kivy.animtion import Animation
+
 from callbackgoaway import callbackgoaway, Or, And
 from callbackgoaway.kivy import Event as E, Sleep as S
 
 @callbackgoaway
 def func():
+    sound = SoundLoader(...)
+    button = Factory.Button(...)
+    anim = Animation(...)
 
-    # wait until both events are triggered
-    yield E(...) & E(...)
+    # wait until either the sound stops OR 5 seconds passes
+    # 音が鳴り止む 'か' 5秒経つまで待機
+    sound.play()
+    yield E(sound, 'on_stop') | S(5)
 
-    # You can mix Event and Sleep
-    yield E(...) & S(...)
+    # wait until both the animation is completed AND the button is pressed
+    # アニメーションが完了して 'かつ' buttonが押されるまで待機
+    anim.start(button)
+    yield E(anim, 'on_complete') & E(button, 'on_press')
 
-    # wait until all four events are triggered
+    # if there are a lof of events, better to not use operators
+    # たくさんEventがあるなら演算子を使わない方がいいかもしれません
     yield And(E(...), S(...), E(...), E(...))
-
-    # wait until either of events are triggered
-    yield E(...) | E(...)
-    # same
-    yield E(...) | S(...)
-    # same
-    yield Or(E(...), S(...), E(...), E(...))
+    yield Or(E(...), S(...), S(...), E(...))
 ```
+
+## 別のGeneratorを待機
+
+```python
+from callbackgoaway import (
+    callbackgoaway, Generator as G, GeneratorFunction as GF,
+)
+from callbackgoaway.kivy import Event as E, Sleep as S
+
+@callbackgoaway
+def func():
+    def another_gen1(duration):
+        ...
+        yield S(duration)
+        ...
+    def another_gen2():
+        ...
+        yield E(anim, 'on_complete')
+        ...
+    # nothing special
+    # 普通のsub generator呼び出し
+    yield from another_gen1(1)
+
+    # wait until either of two generators close
+    # どちらかのGeneratorが終わるまで待機
+    yield G(another_gen1(1)) | G(another_gen2())
+
+    # wait until both of two generators close
+    # 両方のGeneratorが終わるまで待機
+    yield G(another_gen1(1)) | G(another_gen2())
+
+    # equivalent to right above
+    # 真上の式と等価な式
+    yield GF(another_gen1, 1) | GF(another_gen2)
+```
+
+## Examples
+
+[紅のNerd](https://github.com/gottadiveintopython/kivy-animation-practice/tree/master/projects/kurenai_no_nerd)
