@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-__all__ = ('callbackgoaway', 'EventBase', 'And', 'Or', )
+__all__ = (
+    'callbackgoaway', 'EventBase', 'And', 'Or',
+    'Generator', 'GeneratorFunction',
+)
 
 from functools import wraps, partial
 
@@ -82,3 +85,26 @@ class Or(EventBase):
         if not self.is_triggered:
             self.is_triggered = True
             self.resume_gen()
+
+
+class Generator(EventBase):
+
+    def __init__(self, gen):
+        super().__init__()
+        self.gen = gen
+
+    def __call__(self, resume_gen):
+        gen = self.gen
+
+        def internal_resume_gen(*args, **kwargs):
+            try:
+                next(gen)(internal_resume_gen)
+            except StopIteration:
+                resume_gen()
+        internal_resume_gen()
+
+
+class GeneratorFunction(Generator):
+
+    def __init__(self, create_gen, *args, **kwargs):
+        super().__init__(create_gen(*args, **kwargs))
