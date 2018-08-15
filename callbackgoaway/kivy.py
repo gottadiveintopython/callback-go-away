@@ -30,7 +30,8 @@ class Event(EventBase):
 
     def __call__(self, resume_gen):
         assert self.bind_id is None  # You can't re-use this instance
-        self.bind_id = self.ed.fbind(self.name, self.callback)
+        self.bind_id = bind_id = self.ed.fbind(self.name, self.callback)
+        assert bind_id > 0  # check if binding succeeded
         self.resume_gen = resume_gen
 
     def callback(self, ed, *args, **kwargs):
