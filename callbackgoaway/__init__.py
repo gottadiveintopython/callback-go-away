@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 __all__ = (
-    'callbackgoaway', 'EventBase', 'Immediate', 'And', 'Or',
+    'callbackgoaway', 'EventBase', 'Never', 'Immediate', 'And', 'Or',
     'Generator', 'GeneratorFunction',
 )
 
@@ -37,6 +37,11 @@ class EventBase:
 
     def __call__(self, resume_gen):
         raise NotImplementedError()
+
+
+class Never(EventBase):
+    def __call__(self, resume_gen):
+        pass
 
 
 class Immediate(EventBase):
