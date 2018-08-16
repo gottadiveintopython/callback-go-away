@@ -22,7 +22,7 @@ class Increament(EventBase):
 Inc = Increament
 
 
-class SyncTestCase(unittest.TestCase):
+class ImmediateCallTestCase(unittest.TestCase):
 
     def setUp(self):
         self.counter = 0
