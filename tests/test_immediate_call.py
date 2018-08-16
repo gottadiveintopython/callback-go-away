@@ -4,7 +4,7 @@ import unittest
 
 import common_setup
 from callbackgoaway import (
-    callbackgoaway, EventBase, And, Or, Generator, GeneratorFunction,
+    callbackgoaway, EventBase, Immediate, And, Or, Generator, GeneratorFunction,
 )
 
 
@@ -45,6 +45,11 @@ class SyncTestCase(unittest.TestCase):
 
         func()
         self.assertEqual(self.counter, 2)
+
+    def test_immediate(self):
+        @callbackgoaway
+        def func():
+            yield Immediate()
 
     def test_and(self):
 
