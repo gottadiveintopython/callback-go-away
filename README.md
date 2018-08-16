@@ -48,7 +48,7 @@ def animate(label):
 
 ## このmoduleはいづれ要らなくなる?
 
-moduleの詳しい説明の前に先に言っておきたいのが、Kivyがasyncioに対応した時(例えば[これ](https://github.com/kivy/kivy/pull/5241)が採用された時)にはこのmoduleなど使わずとも同じ事ができるようになるかもしれない事です。漠然とした予想なので絶対にとは言えないですが、対応した時には例えば以下のような書き方が可能になるはずです。
+moduleの説明を続ける前に言っておきたいのが、Kivyがasyncioに対応した時(例えば[これ](https://github.com/kivy/kivy/pull/5241)が採用された時)にはこのmoduleなど使わずとも同じ事ができるようになるかもしれない事です。漠然とした予想なので絶対にとは言えないですが、対応した時には例えば以下のような書き方が可能になるはずです。
 
 ```python
 # Future? Probabely like this
@@ -64,11 +64,11 @@ async def animate(label):
     label.text = 'Kivy?'
 ```
 
-なのでこのmoduleはあくまでそれまでの代替策として考えてもらえたらと思います。
+なのでこのmoduleはあくまでそれまでの繋ぎとして考えてもらえたらと思います。
 
 ## Eventの待機
 
-それでは詳しい機能の説明に入りたいと思います。上の例ではSleepによる時間待機しかしてませんが、Eventの待機もできます。Eventというのは勿論`EventDispatcher`のEventの事です。kivyにおいては多くの物(`App`,`Widget`,`Sound`,`Animation`)が`EventDispatcher`の派生Classである為、それらを利用したcodeが容易に書けます。
+上の例ではSleepによる時間待機しかしてませんが、Eventの待機もできます。Eventというのは勿論`EventDispatcher`のEventの事です。kivyにおいては多くの物(`App`,`Widget`,`Sound`,`Animation`)が`EventDispatcher`の派生Classである為、それらを利用したcodeが容易に書けます。
 
 ```python
 from kivy.core.audio import SoundLoader
@@ -88,11 +88,11 @@ def func():
     # wait until the sound stops
     # 音が鳴り止むまで待機
     sound.play()
-    yield E(sound, 'on_stop')  # A
+    yield E(sound, 'on_stop')
 
     # wait until the button is pressed
     # buttonが押されるまで待機
-    yield E(button, 'on_press')  # B
+    yield E(button, 'on_press')
 
     # wait until the text property of the button is changed
     # buttonのtextプロパティが変化するまで待機
@@ -175,4 +175,4 @@ def func():
 
 ## Examples
 
-[紅のNerd](https://github.com/gottadiveintopython/kivy-animation-practice/tree/master/projects/kurenai_no_nerd)
+[Youtube](https://www.youtube.com/playlist?list=PLNdhqAjzeEGgS6FLxdXCdb_ldCwUCZLXu)
