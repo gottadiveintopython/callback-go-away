@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+from inspect import getgeneratorstate, GEN_CLOSED, GEN_SUSPENDED
 import textwrap
 from time import time
 
@@ -31,8 +32,9 @@ class KivySleepTestCase(unittest.TestCase):
         )
 
         @callbackgoaway
-        def func(__):
+        def func():
             S = Sleep
+            yield S(0)
             start_time = time()
             yield S(.5)
             self.assertAlmostEqual(time() - start_time, .5, delta=self.DELTA)
@@ -40,7 +42,8 @@ class KivySleepTestCase(unittest.TestCase):
             self.assertAlmostEqual(time() - start_time, 1, delta=self.DELTA)
             stopTouchApp()
 
-        Clock.schedule_once(func, 0)
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_SUSPENDED)
         runTouchApp(root)
 
     def test_or_sleep(self):
@@ -50,8 +53,9 @@ class KivySleepTestCase(unittest.TestCase):
         )
 
         @callbackgoaway
-        def func(__):
+        def func():
             S = Sleep
+            yield S(0)
             start_time = time()
             yield S(.5) | S(1)
             self.assertAlmostEqual(time() - start_time, .5, delta=self.DELTA)
@@ -59,7 +63,8 @@ class KivySleepTestCase(unittest.TestCase):
             self.assertAlmostEqual(time() - start_time, 1.5, delta=self.DELTA)
             stopTouchApp()
 
-        Clock.schedule_once(func, 0)
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_SUSPENDED)
         runTouchApp(root)
 
     def test_and_sleep(self):
@@ -69,16 +74,19 @@ class KivySleepTestCase(unittest.TestCase):
         )
 
         @callbackgoaway
-        def func(__):
+        def func():
             S = Sleep
+            yield S(0)
             start_time = time()
-            yield S(.5) | S(1)
-            self.assertAlmostEqual(time() - start_time, .5, delta=self.DELTA)
-            yield S(2) | S(1)
-            self.assertAlmostEqual(time() - start_time, 1.5, delta=self.DELTA)
+            yield S(.5) & S(1)
+            self.assertAlmostEqual(time() - start_time, 1, delta=self.DELTA)
+            yield S(2) & S(1)
+            self.assertAlmostEqual(time() - start_time, 3, delta=self.DELTA)
             stopTouchApp()
 
-        Clock.schedule_once(func, 0)
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_SUSPENDED)
+        # Clock.schedule_once(func, 0)
         runTouchApp(root)
 
 
@@ -95,15 +103,17 @@ class KivyEventTestCase(unittest.TestCase):
         )
 
         @callbackgoaway
-        def func(__):
+        def func():
             anim = Animation(opacity=0)
             anim.start(root)
             yield Event(anim, 'on_complete')
             self.assertEqual(root.opacity, 0)
             stopTouchApp()
 
-        Clock.schedule_once(func, 0)
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_SUSPENDED)
         runTouchApp(root)
+        self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
 
     def test_property_event(self):
         root = Factory.Label(
@@ -112,14 +122,16 @@ class KivyEventTestCase(unittest.TestCase):
         )
 
         @callbackgoaway
-        def func(__):
+        def func():
             Clock.schedule_once(lambda __: setattr(root, 'font_size', 20), .5)
             yield Event(root, 'font_size')
             self.assertEqual(root.font_size, 20)
             stopTouchApp()
 
-        Clock.schedule_once(func, 0)
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_SUSPENDED)
         runTouchApp(root)
+        self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
 
     def test_or_event(self):
 
@@ -135,7 +147,7 @@ class KivyEventTestCase(unittest.TestCase):
         '''))
 
         @callbackgoaway
-        def func(__):
+        def func():
             image = root.ids.image
             label = root.ids.label
             anim1 = Animation(opacity=0)
@@ -147,8 +159,10 @@ class KivyEventTestCase(unittest.TestCase):
             self.assertAlmostEqual(label.opacity, 0.5, delta=0.1)
             stopTouchApp()
 
-        Clock.schedule_once(func, 0)
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_SUSPENDED)
         runTouchApp(root)
+        self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
 
     def test_and_event(self):
 
@@ -164,7 +178,7 @@ class KivyEventTestCase(unittest.TestCase):
         '''))
 
         @callbackgoaway
-        def func(__):
+        def func():
             image = root.ids.image
             label = root.ids.label
             anim1 = Animation(opacity=0)
@@ -176,8 +190,10 @@ class KivyEventTestCase(unittest.TestCase):
             self.assertEqual(label.opacity, 0)
             stopTouchApp()
 
-        Clock.schedule_once(func, 0)
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_SUSPENDED)
         runTouchApp(root)
+        self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
 
 
 class KivyComplexTestCase(unittest.TestCase):
@@ -200,7 +216,7 @@ class KivyComplexTestCase(unittest.TestCase):
         '''))
 
         @callbackgoaway
-        def func(__):
+        def func():
             A = Animation
             E = Event
             S = Sleep
@@ -208,6 +224,7 @@ class KivyComplexTestCase(unittest.TestCase):
             label = root.ids.label
             a1 = A(opacity=0, d=2)
             a2 = A(opacity=0)
+            yield S(0)
             a1.start(image)
             a2.start(label)
             yield E(a1, 'on_complete') | S(.5) | E(a2, 'on_complete')
@@ -221,8 +238,10 @@ class KivyComplexTestCase(unittest.TestCase):
             self.assertEqual(image.opacity, 0)
             stopTouchApp()
 
-        Clock.schedule_once(func, 0)
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_SUSPENDED)
         runTouchApp(root)
+        self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
 
 
 if __name__ == "__main__":

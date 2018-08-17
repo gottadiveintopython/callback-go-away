@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+from inspect import getgeneratorstate, GEN_CLOSED
 
 import common_setup
 from callbackgoaway import (
@@ -43,13 +44,20 @@ class ImmediateCallTestCase(unittest.TestCase):
             yield Inc(self)
             self.assertEqual(self.counter, 2)
 
-        func()
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
         self.assertEqual(self.counter, 2)
 
     def test_Immediate(self):
         @callbackgoaway
         def func():
+            self.assertEqual(self.counter, 0)
             yield Immediate()
+            self.counter += 1
+
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
+        self.assertEqual(self.counter, 1)
 
     def test_operator_and(self):
 
@@ -65,7 +73,8 @@ class ImmediateCallTestCase(unittest.TestCase):
             yield And(self.inc, self.inc, self.inc)
             self.assertEqual(self.counter, 11)
 
-        func()
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
         self.assertEqual(self.counter, 11)
 
     def test_operator_or(self):
@@ -91,8 +100,8 @@ class ImmediateCallTestCase(unittest.TestCase):
             yield Or(self.inc, self.inc, self.inc)
             self.assertEqual(self.counter, 4)
 
-        func()
-
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
         # generatorから戻ってきた時には全てのincreamentが実行されている
         self.assertEqual(self.counter, 11)
 
@@ -110,8 +119,8 @@ class ImmediateCallTestCase(unittest.TestCase):
             yield Inc(self) & Inc(self) | Inc(self)
             self.assertEqual(self.counter, 3)
 
-        func()
-
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
         # generatorから戻ってきた時には全てのincreamentが実行されている
         self.assertEqual(self.counter, 6)
 
@@ -136,7 +145,8 @@ class ImmediateCallTestCase(unittest.TestCase):
             yield GF(create_gen, 2) & GF(create_gen, 1)
             self.assertEqual(self.counter, 8)
 
-        func()
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
         self.assertEqual(self.counter, 9)
 
 

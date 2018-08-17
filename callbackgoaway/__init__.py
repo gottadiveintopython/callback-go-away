@@ -24,6 +24,7 @@ def callbackgoaway(create_gen):
                 pass
 
         resume_gen()
+        return gen
     return wrapper
 
 
