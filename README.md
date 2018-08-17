@@ -47,10 +47,9 @@ def animate(label):
 
 ## このmoduleはいづれ要らなくなる?
 
-ただ先に言っておきたいのが、Kivyがasyncioに対応した時(例えば[これ](https://github.com/kivy/kivy/pull/5241)が採用された時)にはこのmoduleなど使わずとも同じ事ができるようになるかもしれない事です。漠然とした予想なので絶対にとは言えないですが、対応した時には例えば以下のような書き方が可能になるはずです。
+でも先に言っておきたいのが、Kivyがasyncioに対応した時(例えば[これ](https://github.com/kivy/kivy/pull/5241)が採用された時)にはこのmoduleなど使わずとも同じ事ができるようになるかもしれない事です。絶対にとは言えないですが、対応した時には例えば以下のような書き方が可能になるはずです。
 
 ```python
-# Future? Probabely like this
 from asyncio import sleep
 
 async def animate(label):
@@ -80,7 +79,7 @@ from callbackgoaway.kivy import Event as E
 
 @callbackgoaway
 def func():
-    sound = SoundLoader(...)
+    sound = SoundLoader.load(...)
     button = Factory.Button(...)
     anim = Animation(...)
 
@@ -103,9 +102,9 @@ def func():
     yield E(anim, 'on_complete')
 ```
 
-## or演算子とand演算子
+## `|`演算子と`&`演算子
 
-or演算子とand演算子を使うこともできます。
+`|`演算子と`&`演算子を使うこともできます。
 
 ```python
 from kivy.core.audio import SoundLoader
@@ -117,17 +116,17 @@ from callbackgoaway.kivy import Event as E, Sleep as S
 
 @callbackgoaway
 def func():
-    sound = SoundLoader(...)
+    sound = SoundLoader.load(...)
     button = Factory.Button(...)
     anim = Animation(...)
 
-    # wait until either the sound stops OR 5 seconds passes
-    # 音が鳴り止む 'か' 5秒経つまで待機
+    # wait until EITHER the sound stops OR 5 seconds passes
+    # 音が鳴り止む か 5秒経つまで待機
     sound.play()
     yield E(sound, 'on_stop') | S(5)
 
-    # wait until both the animation is completed AND the button is pressed
-    # アニメーションが完了して 'かつ' buttonが押されるまで待機
+    # wait until BOTH the animation is completed AND the button is pressed
+    # アニメーションが完了して かつ buttonが押されるまで待機
     anim.start(button)
     yield E(anim, 'on_complete') & E(button, 'on_press')
 
@@ -159,7 +158,7 @@ def func():
     # 普通のsub generator呼び出し
     yield from another_gen1(1)
 
-    # wait until either the generator close or 3 seconds pass
+    # wait until either the generator close or 3 seconds passes
     # Generatorが終わるか3秒経つまで待機
     yield G(another_gen1(1)) | S(3)
 
@@ -178,7 +177,7 @@ def func():
 
 ## NeverとImmediate
 
-`Never`と`Immediate`はかなり特殊なEventです。例えば以下のように書くと
+`Never`と`Immediate`は特殊なEventです。例えば以下のように書くと
 
 ```python
 from callbackgoaway import callbackgoaway, Never
@@ -190,16 +189,18 @@ def func():
     yield Never()
 ```
 
-Generatorはこのyieldの位置でずっと停まる事になります。じゃあどうするかというと外部から動かしてもらう事を期待します。
+Generatorはこのyieldの位置でずっと停まる事になります。じゃあどうやって進めるかというと外部から動かしてあげます。
 
 - `next(gen)` (再開)
 - `gen.close()` (終了)
 
-とは言うものの、現状では`@callbackgoaway`は内部で作った`Generator`へアクセスする方法を提供していないので実質そのような事はできません。いづれ作る予定なのでその時までお待ちください。  
+とは言うものの、現状では`@callbackgoaway`は内部で作った`Generator`へアクセスする方法を提供していないので実質そのような事はできません。いづれできるようにする予定です。  
 
 `Immediate`は即座に起こるEventです。なので`yield E(button, 'on_press') & Immediate()` は `yield E(button, 'on_press')` と同じです。これを用いる事で以下のような`if文`を使った以下のようなcodeを
 
 ```python
+from callbackgoaway import callbackgoaway
+
 @callbackgoaway
 def func():
     if sound.state == 'play':
@@ -211,12 +212,14 @@ def func():
 以下のような`if式`を使ったcodeに書き換えれます。
 
 ```python
+from callbackgoaway import callbackgoaway, Immediate
+
 @callbackgoaway
 def func():
     yield E(button, 'on_press') & (E(sound, 'on_stop') if sound.state == 'play' else Immediate())
 ```
 
-...多分どこかで役に立つと思います。
+...多分どこかで役に立つでしょう。
 
 ## Examples
 
