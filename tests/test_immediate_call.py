@@ -46,12 +46,12 @@ class ImmediateCallTestCase(unittest.TestCase):
         func()
         self.assertEqual(self.counter, 2)
 
-    def test_immediate(self):
+    def test_Immediate(self):
         @callbackgoaway
         def func():
             yield Immediate()
 
-    def test_and(self):
+    def test_operator_and(self):
 
         @callbackgoaway
         def func():
@@ -68,7 +68,7 @@ class ImmediateCallTestCase(unittest.TestCase):
         func()
         self.assertEqual(self.counter, 11)
 
-    def test_or(self):
+    def test_operator_or(self):
 
         @callbackgoaway
         def func():
@@ -96,7 +96,7 @@ class ImmediateCallTestCase(unittest.TestCase):
         # generatorから戻ってきた時には全てのincreamentが実行されている
         self.assertEqual(self.counter, 11)
 
-    def test_mix(self):
+    def test_both_of_opeartors(self):
 
         @callbackgoaway
         def func():
@@ -115,7 +115,7 @@ class ImmediateCallTestCase(unittest.TestCase):
         # generatorから戻ってきた時には全てのincreamentが実行されている
         self.assertEqual(self.counter, 6)
 
-    def test_generator(self):
+    def test_Generator_and_GeneratorFunction(self):
 
         def create_gen(times):
             for __ in range(times):
