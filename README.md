@@ -191,12 +191,37 @@ def func():
 
 Generatorはこのyieldの位置でずっと停まる事になります。じゃあどうやって進めるかというと外部から動かしてあげます。
 
-- `next(gen)` (再開)
-- `gen.close()` (終了)
+```python
+from callbackgoaway import callbackgoaway, EventBase, Never
 
-とは言うものの、現状では`@callbackgoaway`は内部で作った`Generator`へアクセスする方法を提供していないので実質そのような事はできません。いづれできるようにする予定です。  
+@callbackgoaway
+def func():
+    print('func(): start')
+    yield Never()
+    print('func(): end')
 
-`Immediate`は即座に起こるEventです。なので`yield E(button, 'on_press') & Immediate()` は `yield E(button, 'on_press')` と同じです。これを用いる事で以下のような`if文`を使った以下のようなcodeを
+gen = func()
+print('returned from func()')
+gen.close()
+print('--------------')
+gen = func()
+print('returned from func()')
+try:
+    next(gen)
+except StopIteration:
+    pass
+```
+
+```text
+func(): start
+returned from func()
+--------------
+func(): start
+returned from func()
+func(): end
+```
+
+`Immediate`ですが、これは即座に起こるEventです。なので`yield E(button, 'on_press') & Immediate()` は `yield E(button, 'on_press')` と同じです。これを用いる事で以下のような`if文`を使った以下のようなcodeを
 
 ```python
 from callbackgoaway import callbackgoaway
@@ -219,7 +244,7 @@ def func():
     yield E(button, 'on_press') & (E(sound, 'on_stop') if sound.state == 'play' else Immediate())
 ```
 
-...多分どこかで役に立つでしょう。
+また`& Immediate()`と同じで`| Never()`も`if式`で使えるでしょう。
 
 ## Examples
 
