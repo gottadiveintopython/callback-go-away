@@ -86,11 +86,7 @@ class Or(EventBase):
         self.is_triggered = False
         self.resume_gen = resume_gen
         for event in self.events:
-            # The partial() here looks meaningless. But this is needed in order
-            # to avoid possibility that 'self' to be GC-ed.
-            # このpartial()は無意味に見えますが、これをしないとselfがゴミ収集の対象
-            # にされる可能性がある。
-            event(partial(self.on_child_event))
+            event(self.on_child_event)
 
     def on_child_event(self, *args, **kwargs):
         if not self.is_triggered:

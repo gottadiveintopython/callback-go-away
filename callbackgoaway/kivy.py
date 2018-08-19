@@ -2,6 +2,8 @@
 
 __all__ = ('Sleep', 'Event', )
 
+from functools import partial
+
 from kivy.clock import Clock
 schedule_once = Clock.schedule_once
 
@@ -16,7 +18,12 @@ class Sleep(EventBase):
         self.seconds = seconds
 
     def __call__(self, resume_gen):
-        schedule_once(resume_gen, self.seconds)
+        # The partial() here looks meaningless. But this is needed in order
+        # to avoid weak reference
+        # このpartial()は無意味に見えますが、これをしないとresume_genの弱参照が作ら
+        # れる可能性があり、それによってresume_genが呼ばれない事がある。
+        # (例えばresume_genが一時オブジェクトのinstance methodの時)
+        schedule_once(partial(resume_gen), self.seconds)
 
 
 class Event(EventBase):
