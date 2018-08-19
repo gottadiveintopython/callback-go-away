@@ -80,8 +80,8 @@ class KivySleepTestCase(unittest.TestCase):
             start_time = time()
             yield S(.5) & S(1)
             self.assertAlmostEqual(time() - start_time, 1, delta=self.DELTA)
-            yield S(2) & S(1)
-            self.assertAlmostEqual(time() - start_time, 3, delta=self.DELTA)
+            yield S(.5) & S(1)
+            self.assertAlmostEqual(time() - start_time, 2, delta=self.DELTA)
             stopTouchApp()
 
         gen = func()
