@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 __all__ = (
-    'callbackgoaway', 'EventBase', 'Never', 'Immediate', 'And', 'Or',
+    'callbackgoaway', 'EventBase', 'Never', 'Immediate', 'Wait', 'And', 'Or',
     'Generator', 'GeneratorFunction',
 )
 
@@ -48,6 +48,31 @@ class Never(EventBase):
 class Immediate(EventBase):
     def __call__(self, resume_gen):
         resume_gen()
+
+
+class Wait(EventBase):
+
+    def __init__(self, *, events, n=None):
+        super().__init__()
+        self.events = tuple(events)
+        self.initial_num_left = n if n is not None else len(self.events)
+
+    def __call__(self, resume_gen):
+        self.num_left = self.initial_num_left
+        self.resume_gen = resume_gen
+        self.triggered_event_ids = set()
+        for event_id, event in enumerate(self.events):
+            event(partial(self.on_child_event, event_id))
+
+    def on_child_event(self, event_id, *args, **kwargs):
+        if event_id not in self.triggered_event_ids:
+            self.triggered_event_ids.add(event_id)
+            self.num_left -= 1
+            if self.num_left == 0:
+                self.resume_gen()
+        else:
+            if __debug__:
+                debug('Event(with id {}) triggered more than once.'.format(event_id))
 
 
 class And(EventBase):

@@ -14,7 +14,7 @@ from kivy.core.window import Window
 
 
 import common_setup
-from callbackgoaway import callbackgoaway
+from callbackgoaway import callbackgoaway, Wait
 from callbackgoaway.kivy import Event, Sleep
 
 
@@ -44,6 +44,28 @@ class KivySleepTestCase(unittest.TestCase):
 
         gen = func()
         self.assertEqual(getgeneratorstate(gen), GEN_SUSPENDED)
+        runTouchApp(root)
+
+    def test_wait_sleep(self):
+        root = Factory.Label(
+            text="Test 'wait' Sleep",
+            font_size='30sp',
+        )
+
+        @callbackgoaway
+        def func():
+            S = Sleep
+            yield S(0)
+            start_time = time()
+            yield Wait(events=(S(.5), S(1), ))
+            self.assertAlmostEqual(time() - start_time, 1.0, delta=self.DELTA)
+            yield Wait(events=(S(.5), S(1), S(1.5)), n=2)
+            self.assertAlmostEqual(time() - start_time, 2.0, delta=self.DELTA)
+            stopTouchApp()
+
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_SUSPENDED)
+
         runTouchApp(root)
 
     def test_or_sleep(self):
@@ -126,6 +148,43 @@ class KivyEventTestCase(unittest.TestCase):
             Clock.schedule_once(lambda __: setattr(root, 'font_size', 20), .5)
             yield Event(root, 'font_size')
             self.assertEqual(root.font_size, 20)
+            stopTouchApp()
+
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_SUSPENDED)
+        runTouchApp(root)
+        self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
+
+    def test_wait_event(self):
+
+        root = Builder.load_string(textwrap.dedent('''
+        BoxLayout:
+            Image:
+                id: image
+                source: 'data/logo/kivy-icon-256.png'
+            Label:
+                id: label
+                text: "Test 'wait' Event"
+                font_size: sp(30)
+        '''))
+
+        @callbackgoaway
+        def func():
+            image = root.ids.image
+            label = root.ids.label
+            anim1 = Animation(opacity=0)
+            anim2 = Animation(opacity=0, d=.5)
+            anim1.start(image)
+            anim2.start(label)
+            yield Wait(
+                events=(
+                    Event(anim1, 'on_complete'),
+                    Event(anim2, 'on_complete'),
+                ),
+                n=1,
+            )
+            self.assertAlmostEqual(image.opacity, 0.5, delta=.1)
+            self.assertEqual(label.opacity, 0)
             stopTouchApp()
 
         gen = func()

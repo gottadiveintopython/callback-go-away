@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from inspect import getgeneratorstate, GEN_CLOSED
+from inspect import getgeneratorstate, GEN_CLOSED, GEN_SUSPENDED
 
 import common_setup
 from callbackgoaway import (
     callbackgoaway, EventBase, Immediate, And, Or, Generator, GeneratorFunction,
+    Wait,
 )
 
 
@@ -58,6 +59,31 @@ class ImmediateCallTestCase(unittest.TestCase):
         gen = func()
         self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
         self.assertEqual(self.counter, 1)
+
+    def test_wait(self):
+
+        @callbackgoaway
+        def func():
+            self.assertEqual(self.counter, 0)
+            yield Wait(events=(Inc(self), Inc(self), ))
+            self.assertEqual(self.counter, 2)
+            yield Wait(events=(Inc(self), Inc(self), ), n=1)
+            self.assertEqual(self.counter, 3)
+
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
+        self.assertEqual(self.counter, 4)
+
+    def test_wait2(self):
+
+        @callbackgoaway
+        def func():
+            self.assertEqual(self.counter, 0)
+            yield Wait(events=(Inc(self), Inc(self), ), n=3)
+
+        gen = func()
+        self.assertEqual(getgeneratorstate(gen), GEN_SUSPENDED)
+        self.assertEqual(self.counter, 2)
 
     def test_operator_and(self):
 

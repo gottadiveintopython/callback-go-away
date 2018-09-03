@@ -4,7 +4,7 @@ import unittest
 from inspect import getgeneratorstate, GEN_CLOSED, GEN_SUSPENDED
 
 import common_setup
-from callbackgoaway import callbackgoaway, EventBase, Never
+from callbackgoaway import callbackgoaway, EventBase, Never, Wait
 
 
 class Increament(EventBase):
@@ -46,6 +46,31 @@ class NeverTestCase(unittest.TestCase):
             next(gen)
         self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
         self.assertEqual(self.counter, 2)
+
+    def test_wait(self):
+
+        @callbackgoaway
+        def func():
+            self.assertEqual(self.counter, 0)
+            yield Wait(events=(Never(), Inc(self), Inc(self), ), n=1)
+            self.assertEqual(self.counter, 1)
+            yield Wait(events=(Never(), Inc(self), Inc(self), ), n=3)  # A
+            self.counter += 1
+            yield 'TEST'
+            self.counter += 1
+
+        gen = func()
+        # この時点で既にA行の"Inc(self)"は実行されている
+        self.assertEqual(self.counter, 4)
+        self.assertEqual(getgeneratorstate(gen), GEN_SUSPENDED)
+        # A行の後のGeneratorの進め方はこちらに任されている
+        self.assertEqual(self.counter, 4)
+        self.assertEqual(next(gen), 'TEST')
+        self.assertEqual(self.counter, 5)
+        with self.assertRaises(StopIteration):
+            next(gen)
+        self.assertEqual(getgeneratorstate(gen), GEN_CLOSED)
+        self.assertEqual(self.counter, 6)
 
     def test_operator_and(self):
 
