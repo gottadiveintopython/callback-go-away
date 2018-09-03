@@ -136,6 +136,32 @@ def func():
     yield Or(E(...), S(...), S(...), E(...))
 ```
 
+## Wait
+
+Waitを用いる事で、与えられたEventのうち任意の数だけ待機できます
+
+```python
+from kivy.core.audio import SoundLoader
+from kivy.factory import Factory
+from kivy.animtion import Animation
+
+from callbackgoaway import callbackgoaway, Wait
+from callbackgoaway.kivy import Event as E, Sleep as S
+
+@callbackgoaway
+def func():
+    sound = SoundLoader.load(...)
+    button = Factory.Button(...)
+
+    # 音が鳴り止む, 5秒経つ, Buttonが押される,
+    # の3つのEventの内のどれか2つが起きるまで待機
+    sound.play()
+    yield Wait(
+        events=(E(sound, 'on_stop'), S(5), E(button, 'on_press'), ),
+        n=2,
+    )
+```
+
 ## 別のGeneratorを待機
 
 ```python
