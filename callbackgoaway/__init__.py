@@ -75,30 +75,10 @@ class Wait(EventBase):
                 debug('Event(with id {}) triggered more than once.'.format(event_id))
 
 
-class And(EventBase):
+class And(Wait):
 
     def __init__(self, *events):
-        super().__init__()
-        self.events = tuple(events)
-
-    def __call__(self, resume_gen):
-        self.num_left = len(self.events)
-        self.resume_gen = resume_gen
-        self.triggered_event_ids = set()
-        for event in self.events:
-            event(partial(self.on_child_event, id(event)))
-
-    def on_child_event(self, event_id, *args, **kwargs):
-        if event_id not in self.triggered_event_ids:
-            self.triggered_event_ids.add(event_id)
-            self.num_left -= 1
-            if self.num_left == 0:
-                self.resume_gen()
-            else:
-                assert self.num_left > 0
-        else:
-            if __debug__:
-                debug('Event(with id {}) triggered more than once.'.format(event_id))
+        super().__init__(events=events)
 
 
 class Or(EventBase):
