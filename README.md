@@ -207,6 +207,49 @@ def func():
     yield GF(another_gen1, 1) & GF(another_gen2)
 ```
 
+## generatorオブジェクトを操作
+
+`@callbackgoaway`で修飾された関数はgeneratorオブジェクトを返すので、以下のような無限loopを書いてもそれを外部から止める手段がある事を意味します。
+
+```python
+from kivy.app import runTouchApp
+from kivy.factory import Factory
+from callbackgoaway import callbackgoaway
+
+root = Factory.Label(
+    text='Hello', font_size='100sp', markup=True,
+    outline_color=(1, 1, 1, 1, ), outline_width=2,
+)
+
+@callbackgoaway
+def animate_label(label):
+    from callbackgoaway.kivy import Sleep as S
+
+    yield S(1.5)
+    while True:  # 無限loop!!
+        label.text = 'Do'
+        label.color = (0, 0, 0, 1, )
+        yield S(.5)
+        label.text = 'You'
+        yield S(.5)
+        label.text = 'Like'
+        yield S(.5)
+        label.text = 'Kivy?'
+        yield S(2)
+        label.text = 'Answer me!'
+        label.color = (1, 0, 0, 1, )
+        yield S(3)
+
+gen = animate_label(root)  # generatorを取得
+
+def on_touch_down(label, touch):
+    gen.close()  # generatorを終了させる
+    label.text = 'The animation\nwas cancelled.'
+    label.color = (.5, 0, .5, 1, )
+root.bind(on_touch_down=on_touch_down)
+runTouchApp(root)
+```
+
 ## NeverとImmediate
 
 `Never`と`Immediate`は特殊なEventです。例えば以下のように書くと
@@ -282,6 +325,8 @@ def func():
 ```
 
 また`& Immediate()`と同じで`| Never()`も`if式`で使えるでしょう。
+
+
 
 ## Examples
 
