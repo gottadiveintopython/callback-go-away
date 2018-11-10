@@ -1,6 +1,6 @@
 # Callback Go Away: Reducing annoying callback functions
 
-このmoduleを用いる事で、しばしばKivyプログラミングで起こりうる、callback関数だらけの醜いcodeを減らす事ができます。例えば以下のようなLabelのtextを切り替えていくアニメーションのcodeは
+このmoduleを用いる事で、しばしばKivyプログラミングで起こりうるcallback関数だらけの醜いcodeを減らす事ができます。例えば以下のようなLabelのtextを切り替えていくアニメーションのcodeは
 
 ```python
 # Before
@@ -30,10 +30,11 @@ def animate(label):
 ```python
 # After
 from callbackgoaway import callbackgoaway
-from callbackgoaway.kivy import Sleep as S
 
 @callbackgoaway
 def animate(label):
+    from callbackgoaway.kivy import Sleep as S
+
     label.text = 'Do'
     yield S(.5)
     label.text = 'You'
@@ -47,7 +48,7 @@ def animate(label):
 
 ## このmoduleはいづれ要らなくなる?
 
-でも先に言っておきたいのが、Kivyがasyncioに対応した時(例えば[これ](https://github.com/kivy/kivy/pull/5241)が採用された時)にはこのmoduleなど使わずとも同じ事ができるようになるかもしれない事です。絶対にとは言えないですが、対応した時には例えば以下のような書き方が可能になるはずです。
+先に言っておきたいのが、Kivyがasyncioに対応した時(例えば[これ](https://github.com/kivy/kivy/pull/5241)が採用された時)にはこのmoduleなど使わずとも同じ事ができるようになるかもしれない事です。絶対にとは言えないですが、対応した時には例えば以下のような書き方が可能になるはずです。
 
 ```python
 from asyncio import sleep
@@ -74,11 +75,12 @@ from kivy.factory import Factory
 from kivy.animtion import Animation
 
 from callbackgoaway import callbackgoaway
-from callbackgoaway.kivy import Event as E
 
 
 @callbackgoaway
 def func():
+    from callbackgoaway.kivy import Event as E
+
     sound = SoundLoader.load(...)
     button = Factory.Button(...)
     anim = Animation(...)
@@ -104,18 +106,20 @@ def func():
 
 ## `|`演算子と`&`演算子
 
-`|`演算子と`&`演算子を使うこともできます。
+`|`演算子と`&`演算子を使うことで2つ以上のEventを同時に待機できます。
 
 ```python
 from kivy.core.audio import SoundLoader
 from kivy.factory import Factory
 from kivy.animtion import Animation
 
-from callbackgoaway import callbackgoaway, Or, And
-from callbackgoaway.kivy import Event as E, Sleep as S
+from callbackgoaway import callbackgoaway
 
 @callbackgoaway
 def func():
+    from callbackgoaway import Or, And
+    from callbackgoaway.kivy import Event as E, Sleep as S
+
     sound = SoundLoader.load(...)
     button = Factory.Button(...)
     anim = Animation(...)
@@ -131,7 +135,7 @@ def func():
     yield E(anim, 'on_complete') & E(button, 'on_press')
 
     # if there are a lof of events, better to not use operators
-    # たくさんEventがあるなら演算子を使わない方がいいかもしれません
+    # たくさんEventがあるなら演算子を使わずに以下のようにした方が効率は良いです
     yield And(E(...), S(...), E(...), E(...))
     yield Or(E(...), S(...), S(...), E(...))
 ```
@@ -145,11 +149,13 @@ from kivy.core.audio import SoundLoader
 from kivy.factory import Factory
 from kivy.animtion import Animation
 
-from callbackgoaway import callbackgoaway, Wait
-from callbackgoaway.kivy import Event as E, Sleep as S
+from callbackgoaway import callbackgoaway
 
 @callbackgoaway
 def func():
+    from callbackgoaway import Wait
+    from callbackgoaway.kivy import Event as E, Sleep as S
+
     sound = SoundLoader.load(...)
     button = Factory.Button(...)
 
@@ -162,16 +168,16 @@ def func():
     )
 ```
 
-## 別のGeneratorを待機
+## 別のgeneratorを待機
 
 ```python
-from callbackgoaway import (
-    callbackgoaway, Generator as G, GeneratorFunction as GF,
-)
-from callbackgoaway.kivy import Event as E, Sleep as S
+from callbackgoaway import callbackgoaway
 
 @callbackgoaway
 def func():
+    from callbackgoaway import Generator as G, GeneratorFunction as GF
+    from callbackgoaway.kivy import Event as E, Sleep as S
+
     def another_gen1(duration):
         ...
         yield S(duration)
@@ -206,22 +212,27 @@ def func():
 `Never`と`Immediate`は特殊なEventです。例えば以下のように書くと
 
 ```python
-from callbackgoaway import callbackgoaway, Never
+from callbackgoaway import callbackgoaway
 
 @callbackgoaway
 def func():
+    from callbackgoaway import Never
+
     # wait eternally
     # 絶対に起こらないEvent
     yield Never()
 ```
 
-Generatorはこのyieldの位置でずっと停まる事になります。じゃあどうやって進めるかというと外部から動かしてあげます。
+generatorはこのyieldの位置でずっと停まる事になります。じゃあどうやって進めるかというと外部から動かしてあげます。
 
 ```python
-from callbackgoaway import callbackgoaway, EventBase, Never
+from callbackgoaway import callbackgoaway
+
 
 @callbackgoaway
 def func():
+    from callbackgoaway import Never
+
     print('func(): start')
     yield Never()
     print('func(): end')
