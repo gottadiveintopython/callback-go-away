@@ -27,7 +27,7 @@ class Sleep(EventBase):
 
 
 class Event(EventBase):
-    '''kivy,event,EventDispatcher用のWrapper'''
+    '''kivy.event.EventDispatcher用のWrapper'''
 
     def __init__(self, ed, name):
         super().__init__()
