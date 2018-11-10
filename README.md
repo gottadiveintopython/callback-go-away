@@ -1,6 +1,9 @@
+tkinter版は[こちら](README_tkinter.md)  
+tkinter versioin is [here](README_tkinter.md)  
+
 # Callback Go Away: Reducing annoying callback functions
 
-このmoduleを用いる事で、しばしばKivyプログラミングで起こりうるcallback関数だらけの醜いcodeを減らす事ができます。例えば以下のようなLabelのtextを切り替えていくアニメーションのcodeは
+このmoduleを用いる事で、しばしばGUIプログラミングで起こりうるcallback関数だらけの醜いcodeを減らす事ができます。例えば以下のようなLabelのtextを切り替えていくアニメーションのcodeは
 
 ```python
 # Before
