@@ -62,13 +62,16 @@ def animate(label):
 from asyncio import sleep
 
 async def animate(label):
-    label.text = 'Do'
-    await sleep(.5)
-    label.text = 'You'
-    await sleep(.6)
-    label.text = 'Like'
-    await sleep(.7)
-    label.text = 'Kivy?'
+    await sleep(1.5)
+    while True:
+      label.text = 'Do'
+      await sleep(.5)
+      label.text = 'You'
+      await sleep(.5)
+      label.text = 'Like'
+      await sleep(.5)
+      label.text = 'Kivy?'
+      await sleep(2)
 ```
 
 なのでこのmoduleはあくまでそれまでの繋ぎとして考えてもらえたらと思います。
@@ -332,10 +335,4 @@ def func():
     yield E(button, 'on_press') & (E(sound, 'on_stop') if sound.state == 'play' else Immediate())
 ```
 
-また`& Immediate()`と同じで`| Never()`も`if式`で使えるでしょう。
-
-
-
-## Examples
-
-[Youtube](https://www.youtube.com/playlist?list=PLNdhqAjzeEGgS6FLxdXCdb_ldCwUCZLXu)
+また`& Immediate()`と同じ要領で`| Never()`も`if式`で使えるでしょう。
