@@ -3,29 +3,31 @@ tkinter versioin is [here](README_tkinter.md)
 
 # Callback Go Away: Reducing annoying callback functions
 
-このmoduleを用いる事で、しばしばGUIプログラミングで起こりうるcallback関数だらけの醜いcodeを減らす事ができます。例えば以下のようなLabelのtextを切り替えていくアニメーションのcodeは
+このmoduleを用いる事で、GUIプログラミングでしばしば起こりうるcallback関数だらけの醜いcodeを減らす事ができます。例えば以下のようなLabelのtextを切り替えていくアニメーションのcodeは
 
 ```python
 # Before
-from kivy.clock import Clock
-
-def animate(label):
+def animate_label(label):
+    from kivy.clock import Clock
     s = Clock.schedule_once
 
-    label.text = 'Do'
-
     def phase1(dt):
-        label.text = 'You'
-        s(phase2, .6)
+        label.text = 'Do'
+        s(phase2, .5)
 
     def phase2(dt):
-        label.text = 'Like'
-        s(phase3, .7)
+        label.text = 'You'
+        s(phase3, .5)
 
     def phase3(dt):
-        label.text = 'Kivy?'
+        label.text = 'Like'
+        s(phase4, .5)
 
-    s(phase1, .5)
+    def phase4(dt):
+        label.text = 'Kivy?'
+        s(phase1, 2)
+
+    s(phase1, 1.5)
 ```
 
 以下の様に書き換えられます。
@@ -38,13 +40,16 @@ from callbackgoaway import callbackgoaway
 def animate(label):
     from callbackgoaway.kivy import Sleep as S
 
-    label.text = 'Do'
-    yield S(.5)
-    label.text = 'You'
-    yield S(.6)
-    label.text = 'Like'
-    yield S(.7)
-    label.text = 'Kivy?'
+    yield S(1.5)
+    while True:
+        label.text = 'Do'
+        yield S(.5)
+        label.text = 'You'
+        yield S(.5)
+        label.text = 'Like'
+        yield S(.5)
+        label.text = 'Kivy?'
+        yield S(2)
 ```
 
 この例のような **特にUserの操作に反応するわけではなくただひたすら逐一処理を行いたい時** 、言い換えるなら **CUIアプリのような書き方をしたい時** にこのmoduleは真価を発揮します。(Userの操作に関してもですがCUIアプリのように特定の時点でのみ入力を受け付けたいなら、このmoduleとの親和性は高いです)。
