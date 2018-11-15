@@ -33,10 +33,10 @@ def _test():
 
     gen = animate_label(label)
 
-    def on_cliked(event):
+    def on_clicked(event):
         gen.close()
         label['text'] = 'The animation\nwas cancelled.'
-    label.bind('<Button-1>', on_cliked)
+    label.bind('<Button-1>', on_clicked)
     root.mainloop()
 
 
