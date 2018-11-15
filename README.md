@@ -29,6 +29,7 @@ def animate_label(label):
 
 - [Tkinter](doc/tkinter.md)
 - [Kivy](doc/kivy.md)
+- [Pyglet](doc/pyglet.md)
 
 ## Test環境(Test Environment)
 
