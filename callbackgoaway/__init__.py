@@ -6,10 +6,14 @@ __all__ = (
 )
 
 from functools import wraps, partial
+from collections import namedtuple
 
 from . import setup_logging
 logger = setup_logging.get_logger(__file__)
 debug = logger.debug
+
+
+CallbackParameter = namedtuple('CallbackParameter', ('args', 'kwargs', ))
 
 
 def callbackgoaway(create_gen):
@@ -19,11 +23,15 @@ def callbackgoaway(create_gen):
 
         def resume_gen(*args, **kwargs):
             try:
-                next(gen)(resume_gen)
+                gen.send(CallbackParameter(args, kwargs, ))(resume_gen)
             except StopIteration:
                 pass
 
-        resume_gen()
+        try:
+            next(gen)(resume_gen)
+        except StopIteration:
+            pass
+
         return gen
     return wrapper
 

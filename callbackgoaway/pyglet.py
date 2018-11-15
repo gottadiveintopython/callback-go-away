@@ -35,4 +35,4 @@ class Event(EventBase):
 
     def callback(self, *args, **kwargs):
         self.ed.remove_handler(self.name, self.callback)
-        self.resume_gen()
+        self.resume_gen(*args, **kwargs)

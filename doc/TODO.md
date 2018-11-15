@@ -1,0 +1,6 @@
+- Test
+  - tkinterのtest
+  - pygletのtest
+  - `generator.send()`によって送られた値のtest
+- Doc
+  - docに`generator.send()`によって送られた値の使い方を書く

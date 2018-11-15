@@ -34,7 +34,7 @@ class Event(EventBase):
 
     def callback(self, event):
         self.widget.unbind(self.name, self.bind_id)
-        self.resume_gen()
+        self.resume_gen(event)
 
 
 _old_unbind = None

@@ -43,4 +43,4 @@ class Event(EventBase):
 
     def callback(self, ed, *args, **kwargs):
         ed.unbind_uid(self.name, self.bind_id)
-        self.resume_gen()
+        self.resume_gen(ed, *args, **kwargs)
