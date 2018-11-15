@@ -66,6 +66,37 @@ def func():
     yield E(label, '<Button-1>')
 ```
 
+## unbindの不具合？
+
+以下のように複数のcallback関数を`bind()`した場合
+
+```python
+from tkinter import *
+
+
+root = Tk()
+button = Button(root, text='Push Me', font=('', 40))
+button.pack()
+
+bind_id = button.bind('<Button-1>', lambda event: print('1st callback'), '+')
+print(bind_id)
+bind_id2 = button.bind('<Button-1>', lambda event: print('2nd callback'), '+')
+print(bind_id2)
+
+button.unbind('<Button-1>', bind_id)  # A
+# button.unbind('<Button-1>', bind_id2)  # B
+
+root.mainloop()
+```
+
+A行とB行のどちらか一つを有効にしただけで両方のcallback関数が呼ばれなくなってしまいます。これが仕様なのか不具合なのか分かりませんが、[stackoverflowの投稿](https://stackoverflow.com/questions/6433369/deleting-and-changing-a-tkinter-event-binding)を参考にこれを修正するpatchを含めました。必要に応じて当ててください。
+
+```python
+# 使い方
+from callbackgoaway.tkinter import patch_unbind
+patch_unbind()
+```
+
 ## `|`演算子と`&`演算子
 
 kivy版のREADMEを参照してください。

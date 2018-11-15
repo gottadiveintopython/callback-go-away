@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__all__ = ('Sleep', 'Event', )
+__all__ = ('Sleep', 'Event', 'patch_unbind')
 
 
 from . import EventBase
@@ -35,3 +35,27 @@ class Event(EventBase):
     def callback(self, event):
         self.widget.unbind(self.name, self.bind_id)
         self.resume_gen()
+
+
+_old_unbind = None
+
+
+def _new_unbind(self, sequence, funcid=None):
+    """Unbind for this widget for event SEQUENCE  the
+    function identified with FUNCID."""
+    if not funcid:
+        self.tk.call('bind', self._w, sequence, '')
+        return
+    func_callbacks = self.tk.call('bind', self._w, sequence, None).split('\n')
+    new_callbacks = [l for l in func_callbacks if l[6:6 + len(funcid)] != funcid]
+    self.tk.call('bind', self._w, sequence, '\n'.join(new_callbacks))
+    self.deletecommand(funcid)
+
+
+def patch_unbind():
+    from tkinter import Misc
+
+    global _old_unbind
+    if _old_unbind is None:
+        _old_unbind = Misc.unbind
+        Misc.unbind = _new_unbind

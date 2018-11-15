@@ -37,7 +37,7 @@ def animate_label(label):
 from callbackgoaway import callbackgoaway
 
 @callbackgoaway
-def animate(label):
+def animate_label(label):
     from callbackgoaway.kivy import Sleep as S
 
     yield S(1.5)
@@ -61,7 +61,7 @@ def animate(label):
 ```python
 from asyncio import sleep
 
-async def animate(label):
+async def animate_label(label):
     await sleep(1.5)
     while True:
       label.text = 'Do'

@@ -6,6 +6,9 @@ import common_setup
 def _test():
     from tkinter import Tk, Label
     from callbackgoaway import callbackgoaway
+    from callbackgoaway.tkinter import patch_unbind
+
+    patch_unbind()
 
     root = Tk()
     label = Label(root, text='Hello', font=('', 80))
