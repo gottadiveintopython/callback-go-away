@@ -1,5 +1,3 @@
-# Callback Go Away: Reducing annoying callback functions
-
 このmoduleを用いる事で、GUIプログラミングでしばしば起こりうるcallback関数だらけの醜いcodeを減らす事ができます。例えば以下のようなLabelのtextを切り替えていくアニメーションのcodeは
 
 ```python
@@ -92,61 +90,11 @@ root.mainloop()
 A行とB行のどちらか一つを有効にしただけで両方のcallback関数が呼ばれなくなってしまいます。これが仕様なのか不具合なのか分かりませんが、[stackoverflowの投稿](https://stackoverflow.com/questions/6433369/deleting-and-changing-a-tkinter-event-binding)を参考にこれを修正するpatchを含めました。必要に応じて当ててください。
 
 ```python
-# 使い方
+# patchの当て方
 from callbackgoaway.tkinter import patch_unbind
 patch_unbind()
 ```
 
-## `|`演算子と`&`演算子
+## 他の機能
 
-kivy版のREADMEを参照してください。
-
-## Wait
-
-kivy版のREADMEを参照してください。
-
-## 別のgeneratorを待機
-
-kivy版のREADMEを参照してください。
-
-## generatorオブジェクトを操作
-
-`@callbackgoaway`で修飾された関数はgeneratorオブジェクトを返すので、以下のような無限loopを書いてもそれを外部から止める手段がある事を意味します。
-
-```python
-from tkinter import Tk, Label
-from callbackgoaway import callbackgoaway
-
-root = Tk()
-label = Label(root, text='Hello', font=('', 80))
-label.pack()
-
-@callbackgoaway
-def animate_label(label):
-    from callbackgoaway.tkinter import Sleep as S
-
-    yield S(label, 1500)
-    while True:  # 無限loop!!
-        label['text'] = 'Do'
-        yield S(label, 500)
-        label['text'] = 'You'
-        yield S(label, 500)
-        label['text'] = 'Like'
-        yield S(label, 500)
-        label['text'] = 'Tkinter?'
-        yield S(label, 2000)
-        label['text'] = 'Answer me!'
-        yield S(label, 3000)
-
-gen = animate_label(label)  # generatorを取得
-
-def on_cliked(event):
-    gen.close()  # generatorを終了させる
-    label['text'] = 'The animation\nwas cancelled.'
-label.bind('<Button-1>', on_cliked)
-root.mainloop()
-```
-
-## NeverとImmediate
-
-kivy版のREADMEを参照してください。
+他の機能に関してはどのGUIライブラリでも使い方が同じなので[別にまとめました](common.md)。
