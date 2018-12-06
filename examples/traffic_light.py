@@ -6,7 +6,7 @@ from kivy.app import runTouchApp
 from kivy.lang import Builder
 from kivy.uix.widget import Widget
 from kivy.properties import (
-    NumericProperty, ListProperty, ReferenceListProperty,
+    NumericProperty, ListProperty, ReferenceListProperty, ObjectProperty,
 )
 
 
@@ -83,7 +83,11 @@ class TrafficLight(Widget):
     _current_left_color = ListProperty()
     _current_center_color = ListProperty()
     _current_right_color = ListProperty()
-    _gen = None  # instance属性の初期値としてのみ使っているclass属性
+    _gen = ObjectProperty(None, allownone=True)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.reset()
 
     def reset(self):
         '''widgetの状態をreset'''
@@ -203,6 +207,7 @@ class TrafficLight(Widget):
                     a = A(**{property_name: light_off_color[:],
                              'duration': random_duration()})
                     a.start(self)
+                    yield E(a, 'on_complete')
             finally:
                 if a is not None:
                     a.cancel(self)
