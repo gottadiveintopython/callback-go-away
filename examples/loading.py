@@ -45,11 +45,12 @@ class Loading(BoxLayout):
     @animation
     def anim_main(self):
         from kivy.animation import Animation as A
-        from callbackgoaway import Generator as G, And
+        from callbackgoaway import callbackgoaway, Never
         from callbackgoaway.kivy import Sleep as S, Event as E
 
         yield S(0)
 
+        @callbackgoaway
         def anim_repeat_falldown(label, *, delay):
             yield S(delay)
             a = (
@@ -78,7 +79,7 @@ class Loading(BoxLayout):
             for index, label in enumerate(labels)
         ]
         try:
-            yield And(*(G(gen) for gen in gens))
+            yield Never()
         finally:
             for gen in gens:
                 gen.close()

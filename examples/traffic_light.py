@@ -181,7 +181,7 @@ class TrafficLight(Widget):
     def anim_random(self):
         '''無作為に明かりを点灯させる'''
 
-        from callbackgoaway import Generator as G, And
+        from callbackgoaway import callbackgoaway, Never
         from callbackgoaway.kivy import Sleep as S, Event as E
         from kivy.animation import Animation as A
         from kivy.utils import get_random_color
@@ -193,6 +193,7 @@ class TrafficLight(Widget):
         def random_duration():
             return random() + .5
 
+        @callbackgoaway
         def anim_one_light(property_name):
             yield S(0)
             a = None
@@ -215,7 +216,7 @@ class TrafficLight(Widget):
         gens = [anim_one_light(f'_current_{name}_color')
                 for name in ('left', 'right', 'center', )]
         try:
-            yield And(*(G(gen) for gen in gens))
+            yield Never()
         finally:
             for gen in gens:
                 gen.close()
