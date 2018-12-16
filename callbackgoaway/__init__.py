@@ -8,11 +8,6 @@ __all__ = (
 from functools import wraps, partial
 from collections import namedtuple
 
-from . import setup_logging
-logger = setup_logging.get_logger(__file__)
-debug = logger.debug
-
-
 CallbackParameter = namedtuple('CallbackParameter', ('args', 'kwargs', ))
 
 
@@ -78,9 +73,6 @@ class Wait(EventBase):
             self.num_left -= 1
             if self.num_left == 0:
                 self.resume_gen()
-        else:
-            if __debug__:
-                debug('Event(with id {}) triggered more than once.'.format(event_id))
 
 
 class And(Wait):
