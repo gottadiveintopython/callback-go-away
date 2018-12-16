@@ -81,22 +81,9 @@ class And(Wait):
         super().__init__(events=events)
 
 
-class Or(EventBase):
-
+class Or(Wait):
     def __init__(self, *events):
-        super().__init__()
-        self.events = tuple(events)
-
-    def __call__(self, resume_gen):
-        self.is_triggered = False
-        self.resume_gen = resume_gen
-        for event in self.events:
-            event(self.on_child_event)
-
-    def on_child_event(self, *args, **kwargs):
-        if not self.is_triggered:
-            self.is_triggered = True
-            self.resume_gen()
+        super().__init__(events=events, n=1)
 
 
 class Generator(EventBase):
