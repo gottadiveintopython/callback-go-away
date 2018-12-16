@@ -58,21 +58,22 @@ class Wait(EventBase):
     def __init__(self, *, events, n=None):
         super().__init__()
         self.events = tuple(events)
-        self.initial_num_left = n if n is not None else len(self.events)
+        num_events = len(self.events)
+        self.num_left = n if n is not None else num_events
+        self.callbackparameter_list = [None, ] * num_events
 
     def __call__(self, resume_gen):
-        self.num_left = self.initial_num_left
         self.resume_gen = resume_gen
-        self.triggered_event_ids = set()
         for event_id, event in enumerate(self.events):
             event(partial(self.on_child_event, event_id))
 
     def on_child_event(self, event_id, *args, **kwargs):
-        if event_id not in self.triggered_event_ids:
-            self.triggered_event_ids.add(event_id)
+        cp_list = self.callbackparameter_list
+        if cp_list[event_id] is None:
+            cp_list[event_id] = CallbackParameter(args, kwargs)
             self.num_left -= 1
             if self.num_left == 0:
-                self.resume_gen()
+                self.resume_gen(*cp_list)
 
 
 class And(Wait):
