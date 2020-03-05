@@ -1,3 +1,5 @@
+(このmoduleは古いので代わりに[asynckivy](https://github.com/gottadiveintopython/asynckivy)/[asynctkinter](https://github.com/gottadiveintopython/asynctkinter)を使って)
+
 # Callback Go Away : Reducing annoying callback functions
 
 このmoduleを用いる事で、GUIプログラミングでしばしば起こりうるcallback関数だらけの醜いcodeを減らす事ができます。例えばtkinter向けの以下のコードは
